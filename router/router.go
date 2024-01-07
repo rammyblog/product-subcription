@@ -2,11 +2,30 @@ package router
 
 import (
 	"net/http"
+	"text/template"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 )
+
+type CustomRenderer struct {
+	templates *template.Template
+}
+
+func (cr *CustomRenderer) Render(w http.ResponseWriter, r *http.Request, name string, data interface{}, _ chi.Route) error {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	return cr.templates.ExecuteTemplate(w, name, data)
+}
+
+func (cr *CustomRenderer) Bind(bind func(w http.ResponseWriter, r *http.Request) error) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := bind(w, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+	})
+}
 
 func Init() *chi.Mux {
 
