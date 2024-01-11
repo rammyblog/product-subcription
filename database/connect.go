@@ -79,9 +79,31 @@ func MigrateTables(db *gorm.DB) {
 		panic(err)
 	}
 
+	if err := db.AutoMigrate(&models.Product{}); err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
 }
 
 func seeder(db *gorm.DB) {
 	fmt.Println("Seeding data")
-	defer fmt.Println("Done Seeding")
+
+	// Seed Products
+	products := []models.Product{
+		{Name: "GymV1", Price: 10.0, Duration: "month", Description: "Gym monthly Subscription"},
+		{Name: "GymV2", Price: 100.0, Duration: "yearly", Description: "Gym yearly Subscription"},
+		{Name: "MusicV1", Price: 1000.0, Duration: "yearly", Description: "Music yearly Subscription"},
+		{Name: "MusicV2", Price: 100.0, Duration: "month", Description: "Music monthly Subscription"},
+		{Name: "MovieV1", Price: 100.0, Duration: "month", Description: "Movie monthly Subscription"},
+		{Name: "MovieV2", Price: 1000.0, Duration: "yearly", Description: "Movie yearly Subscription"},
+	}
+
+	for _, product := range products {
+		if err := db.Create(&product).Error; err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	fmt.Println("Done Seeding")
 }

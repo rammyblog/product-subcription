@@ -41,9 +41,9 @@ func Init() *chi.Mux {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// r.Mount("/products", ProductRoutes())
 		// r.Mount("/subscriptions", SubscriptionRoutes())
 		r.Mount("/users", UserRoutes())
+		r.Mount("/products", ProductRoutes())
 	})
 
 	return r

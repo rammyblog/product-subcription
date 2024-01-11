@@ -18,6 +18,8 @@ func main() {
 	}
 
 	seed := flag.Bool("seed", false, "seed the db")
+	
+	flag.Parse()
 
 	db, err := database.Init(seed)
 
@@ -36,7 +38,5 @@ func main() {
 		Handler: handler,
 	}
 	log.Printf("[info] start http server listening %s", port)
-
 	server.ListenAndServe()
-
 }

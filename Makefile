@@ -1,11 +1,11 @@
 build:
-	go build -o bin/product-subsctiption
+	go build -o bin/product-subcription
 
 run: build
-	./bin/product-subsctiption
+	./bin/product-subcription
 
 seed: build
-	 .bin/product-subsctiption --seed
+	 ./bin/product-subcription --seed
 
 
 test: 
