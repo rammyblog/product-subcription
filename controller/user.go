@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/render"
-	"github.com/rammyblog/go-product-subscriptions/database"
+	"github.com/rammyblog/go-product-subscriptions/config"
 	"github.com/rammyblog/go-product-subscriptions/helper"
 	"github.com/rammyblog/go-product-subscriptions/middleware"
 	"github.com/rammyblog/go-product-subscriptions/models"
@@ -38,7 +38,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var existingUser models.User
 
-	database.DB.Where("email = ?", user.Email).First(&existingUser)
+	config.GlobalConfig.DB.Where("email = ?", user.Email).First(&existingUser)
 	if existingUser.ID != 0 {
 		render.Render(w, r, response.ErrInvalidRequest(errors.New("email already exist")))
 		return
@@ -52,7 +52,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	user.Password = string(encpw)
 	// create user
-	result := database.DB.Create(&user)
+	result := config.GlobalConfig.DB.Create(&user)
 
 	if result.Error != nil {
 		render.Render(w, r, response.ErrInvalidRequest(result.Error))
@@ -81,7 +81,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := database.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
+	if err := config.GlobalConfig.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
 		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
 		return
 	}

@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/rammyblog/go-product-subscriptions/config"
 	"github.com/rammyblog/go-product-subscriptions/database"
 	"github.com/rammyblog/go-product-subscriptions/router"
 )
@@ -18,7 +19,7 @@ func main() {
 	}
 
 	seed := flag.Bool("seed", false, "seed the db")
-	
+
 	flag.Parse()
 
 	db, err := database.Init(seed)
@@ -29,6 +30,13 @@ func main() {
 	}
 	fmt.Println("db conected", db.Name())
 
+	paystackClient := Paystack()
+
+	config.GlobalConfig = &config.AppConfig{
+		DB:             db,
+		PaystackClient: paystackClient,
+	}
+
 	port := fmt.Sprintf(":%v", os.Getenv("PORT"))
 
 	handler := router.Init()
@@ -38,5 +46,6 @@ func main() {
 		Handler: handler,
 	}
 	log.Printf("[info] start http server listening %s", port)
+	Paystack()
 	server.ListenAndServe()
 }

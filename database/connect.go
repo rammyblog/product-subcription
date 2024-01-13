@@ -10,8 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
 func Init(seed *bool) (*gorm.DB, error) {
 
 	user, exist := os.LookupEnv("DB_USER")
@@ -62,7 +60,6 @@ func Init(seed *bool) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	DB = db
 	MigrateTables(db)
 	if *seed {
 		seeder(db)
