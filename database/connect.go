@@ -92,7 +92,7 @@ func Seed(db *gorm.DB) {
 
 	// Seed Products
 	products := []models.Product{
-		{Name: "GymV1", Price: .0, Duration: "month", Description: "Gym monthly Subscription"},
+		{Name: "GymV1", Price: 1000.0, Duration: "month", Description: "Gym monthly Subscription"},
 		{Name: "GymV2", Price: 100.0, Duration: "yearly", Description: "Gym yearly Subscription"},
 		{Name: "MusicV1", Price: 1000.0, Duration: "yearly", Description: "Music yearly Subscription"},
 		{Name: "MusicV2", Price: 100.0, Duration: "month", Description: "Music monthly Subscription"},
@@ -104,6 +104,11 @@ func Seed(db *gorm.DB) {
 		if err := db.Create(&product).Error; err != nil {
 			log.Fatal(err)
 		}
+	}
+
+	// query products
+	if err := db.Find(&products).Error; err != nil {
+		log.Fatal(err)
 	}
 
 	// TODO: Edit the product with the plan ID from paystack
@@ -127,6 +132,9 @@ func Seed(db *gorm.DB) {
 			log.Fatal(err)
 		}
 		fmt.Println(resp)
+		if err := db.Model(&models.Product{}).Where("id = ?", product.ID).Update("PlanCode", resp.PlanCode).Error; err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	fmt.Println("Done Seeding")
