@@ -1,10 +1,14 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"github.com/rammyblog/go-paystack"
+	"github.com/rammyblog/go-product-subscriptions/config"
 	"github.com/rammyblog/go-product-subscriptions/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -61,9 +65,9 @@ func Init(seed *bool) (*gorm.DB, error) {
 	}
 
 	MigrateTables(db)
-	if *seed {
-		seeder(db)
-	}
+	// if *seed {
+	// 	seeder(db)
+	// }
 	return db, nil
 
 }
@@ -83,12 +87,12 @@ func MigrateTables(db *gorm.DB) {
 
 }
 
-func seeder(db *gorm.DB) {
+func Seed(db *gorm.DB) {
 	fmt.Println("Seeding data")
 
 	// Seed Products
 	products := []models.Product{
-		{Name: "GymV1", Price: 10.0, Duration: "month", Description: "Gym monthly Subscription"},
+		{Name: "GymV1", Price: .0, Duration: "month", Description: "Gym monthly Subscription"},
 		{Name: "GymV2", Price: 100.0, Duration: "yearly", Description: "Gym yearly Subscription"},
 		{Name: "MusicV1", Price: 1000.0, Duration: "yearly", Description: "Music yearly Subscription"},
 		{Name: "MusicV2", Price: 100.0, Duration: "month", Description: "Music monthly Subscription"},
@@ -100,6 +104,29 @@ func seeder(db *gorm.DB) {
 		if err := db.Create(&product).Error; err != nil {
 			log.Fatal(err)
 		}
+	}
+
+	// TODO: Edit the product with the plan ID from paystack
+	// Add products to paystack
+	for _, product := range products {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		interval := "monthly"
+		if product.Duration == "yearly" {
+			interval = "annually"
+		}
+
+		resp, err := config.GlobalConfig.PaystackClient.Plan.Create(ctx, &paystack.CreatePlanRequest{
+			Name:        product.Name,
+			Description: product.Description,
+			Amount:      float32(product.Price * 100),
+			Interval:    interval,
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(resp)
 	}
 
 	fmt.Println("Done Seeding")

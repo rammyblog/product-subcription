@@ -21,7 +21,7 @@ func main() {
 	seed := flag.Bool("seed", false, "seed the db")
 
 	flag.Parse()
-
+	paystackClient := Paystack()
 	db, err := database.Init(seed)
 
 	if err != nil {
@@ -30,11 +30,13 @@ func main() {
 	}
 	fmt.Println("db conected", db.Name())
 
-	paystackClient := Paystack()
-
 	config.GlobalConfig = &config.AppConfig{
 		DB:             db,
 		PaystackClient: paystackClient,
+	}
+
+	if seed != nil && *seed {
+		database.Seed(db)
 	}
 
 	port := fmt.Sprintf(":%v", os.Getenv("PORT"))
@@ -46,6 +48,5 @@ func main() {
 		Handler: handler,
 	}
 	log.Printf("[info] start http server listening %s", port)
-	Paystack()
 	server.ListenAndServe()
 }
