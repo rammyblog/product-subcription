@@ -5,7 +5,9 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/rammyblog/go-product-subscriptions/config"
 	"github.com/rammyblog/go-product-subscriptions/helper"
@@ -18,6 +20,14 @@ import (
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
+}
+
+type UserResponse struct {
+	ID           uint      `json:"id"`
+	Email        string    `json:"email"`
+	CustomerCode string    `json:"customer_code"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -100,4 +110,37 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.Render(w, r, response.Response(http.StatusOK, map[string]string{"token": token}))
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var user models.User
+	if err := config.GlobalConfig.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+		return
+	}
+	render.Render(w, r, response.Response(http.StatusOK, user))
+}
+
+func GetCurrentUser(w http.ResponseWriter, r *http.Request) {
+	userID, err := middleware.GetUserIdFromToken(r.Header.Get("Authorization"))
+	if err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("unauthorized")))
+		return
+	}
+	var currentUser models.User
+	if err := config.GlobalConfig.DB.Where("id = ?", userID).First(&currentUser).Error; err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+		return
+	}
+
+	responseUser := UserResponse{
+		ID:           currentUser.ID,
+		Email:        currentUser.Email,
+		UpdatedAt:    currentUser.UpdatedAt,
+		CreatedAt:    currentUser.CreatedAt,
+		CustomerCode: currentUser.CustomerCode,
+	}
+
+	render.Render(w, r, response.Response(http.StatusOK, responseUser))
 }

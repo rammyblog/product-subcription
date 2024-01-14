@@ -44,6 +44,7 @@ func Init() *chi.Mux {
 		// r.Mount("/subscriptions", SubscriptionRoutes())
 		r.Mount("/users", UserRoutes())
 		r.Mount("/products", ProductRoutes())
+		r.Mount("/transactions", TransactionRouter())
 	})
 
 	return r

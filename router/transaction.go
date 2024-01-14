@@ -9,18 +9,16 @@ import (
 	"github.com/rammyblog/go-product-subscriptions/middleware"
 )
 
-func UserRoutes() chi.Router {
+func TransactionRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		render.JSON(w, r, map[string]string{"message": "welcome to users"})
+		render.JSON(w, r, map[string]string{"message": "welcome to transactions"})
 	})
-
-	r.Post("/", controller.CreateUser)
-	r.Post("/login", controller.LoginUser)
+	r.Post("/webhook", controller.TransactionWebhook)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JwtAuthMiddleware)
-		r.Get("/me", controller.GetCurrentUser)
+		r.Post("/init-customer", controller.InitializeCustomerTransaction)
 	})
 
 	return r

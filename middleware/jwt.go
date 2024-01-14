@@ -50,7 +50,6 @@ func GetUserIdFromToken(bearerToken string) (uint, error) {
 		if err != nil {
 			return 0, err
 		}
-		fmt.Println("uid", uid)
 		return uint(uid), nil
 	}
 	return 0, nil
