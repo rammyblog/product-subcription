@@ -9,7 +9,6 @@ import (
 type AppConfig struct {
 	DB             *gorm.DB
 	PaystackClient *paystack.Client
-	// Add more configuration parameters as needed
 }
 
 // GlobalConfig is the global instance of AppConfig

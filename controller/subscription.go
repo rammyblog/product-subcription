@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/rammyblog/go-paystack"
 	"github.com/rammyblog/go-product-subscriptions/config"
@@ -66,7 +67,7 @@ func CreateSubscription(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, r, response.ErrInvalidRequest(errors.New("this subscription is already in place")))
 			return
 		}
-		render.JSON(w, r, response.ErrInvalidRequest(err))
+		render.JSON(w, r, response.ErrInvalidRequest(errors.New(errMessage)))
 		return
 	}
 
@@ -80,3 +81,88 @@ func CreateSubscription(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, r, response.Response(http.StatusOK, subscription))
 }
+
+func GetSubscriptions(w http.ResponseWriter, r *http.Request) {
+	var subscription models.Subscription
+	var currentUser models.User
+
+	userID, err := middleware.GetUserIdFromToken(r.Header.Get("Authorization"))
+	if err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("unauthorized")))
+		return
+	}
+	if err := config.GlobalConfig.DB.Where("id = ?", userID).First(&currentUser).Error; err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+		return
+	}
+	if err := config.GlobalConfig.DB.Where("user_id = ?", currentUser.ID).First(&subscription).Error; err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+		return
+	}
+
+	render.JSON(w, r, response.Response(http.StatusOK, subscription))
+}
+
+// GetSubscription handles the retrieval of a subscription.
+// It expects the subscription ID as a URL parameter.
+// The user must be authenticated with a valid token in the Authorization header.
+// It retrieves the current user and the subscription from the database.
+// Then, it returns the subscription as a JSON response.
+func GetSubscription(w http.ResponseWriter, r *http.Request) {
+	var subscription models.Subscription
+	var currentUser models.User
+
+	sub_id := chi.URLParam(r, "id")
+
+	userID, err := middleware.GetUserIdFromToken(r.Header.Get("Authorization"))
+	if err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("unauthorized")))
+		return
+	}
+	if err := config.GlobalConfig.DB.Where("id = ?", userID).First(&currentUser).Error; err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+		return
+	}
+	if err := config.GlobalConfig.DB.Where("user_id = ? AND id =?", currentUser.ID, sub_id).First(&subscription).Error; err != nil {
+		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+		return
+	}
+
+	render.JSON(w, r, response.Response(http.StatusOK, subscription))
+}
+
+// TODO: implement this
+
+// func DisableSubscription(w http.ResponseWriter, r *http.Request) {
+// 	var subscription models.Subscription
+// 	var currentUser models.User
+
+// 	sub_id := chi.URLParam(r, "id")
+
+// 	userID, err := middleware.GetUserIdFromToken(r.Header.Get("Authorization"))
+// 	if err != nil {
+// 		render.Render(w, r, response.ErrInvalidRequest(errors.New("unauthorized")))
+// 		return
+// 	}
+// 	if err := config.GlobalConfig.DB.Where("id = ?", userID).First(&currentUser).Error; err != nil {
+// 		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+// 		return
+// 	}
+// 	if err := config.GlobalConfig.DB.Where("user_id = ? AND id =?", currentUser.ID, sub_id).First(&subscription).Error; err != nil {
+// 		render.Render(w, r, response.ErrInvalidRequest(errors.New("record not found")))
+// 		return
+// 	}
+
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	payStackSubscription, err := config.GlobalConfig.PaystackClient.Subscription.Disable(ctx, &paystack.EnableDisableSubscriptionRequest{
+// 		Code:       subscription.SubscriptionCode,
+// 		EmailToken: "jdjdjdj",
+// 	})
+
+// 	if err != nil {
+// 		render.JSON(w, r, response.ErrInvalidRequest(err))
+// 		return
+// 	}
+// }

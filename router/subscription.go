@@ -17,8 +17,8 @@ func SubscriptionRouter() chi.Router {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JwtAuthMiddleware)
 		r.Post("/", controller.CreateSubscription)
-		// r.Get("/", controller.GetSubscriptions)
-		// r.Get("/{id}", controller.GetSubscription)
+		r.Get("/", controller.GetSubscriptions)
+		r.Get("/{id}", controller.GetSubscription)
 		// r.Delete("/{id}", controller.DeleteSubscription)
 	})
 
