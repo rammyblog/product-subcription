@@ -54,3 +54,5 @@ func InitializeCustomerTransaction(w http.ResponseWriter, r *http.Request) {
 	render.Render(w, r, response.Response(http.StatusOK, transaction))
 
 }
+
+

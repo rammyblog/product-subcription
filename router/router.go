@@ -41,10 +41,11 @@ func Init() *chi.Mux {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// r.Mount("/subscriptions", SubscriptionRoutes())
 		r.Mount("/users", UserRoutes())
 		r.Mount("/products", ProductRoutes())
 		r.Mount("/transactions", TransactionRouter())
+		r.Mount("/subscriptions", SubscriptionRouter())
+
 	})
 
 	return r

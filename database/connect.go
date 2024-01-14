@@ -85,6 +85,11 @@ func MigrateTables(db *gorm.DB) {
 		panic(err)
 	}
 
+	if err := db.AutoMigrate(&models.Subscription{}); err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
 }
 
 func Seed(db *gorm.DB) {

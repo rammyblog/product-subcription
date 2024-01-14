@@ -42,8 +42,8 @@ func TransactionWebhook(w http.ResponseWriter, r *http.Request) {
 	if computedHash == signature {
 		var event PaystackEvent
 		json.Unmarshal(reqBody, &event)
+		fmt.Println(event.Event)
 		if event.Event == "charge.success" {
-			fmt.Println(event.Data)
 			email := event.Data.(map[string]interface{})["customer"].(map[string]interface{})["email"].(string)
 			customerCode := event.Data.(map[string]interface{})["customer"].(map[string]interface{})["customer_code"].(string)
 			fmt.Println(email, customerCode)
