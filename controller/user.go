@@ -28,7 +28,6 @@ type UserResponse struct {
 	CustomerCode string    `json:"customer_code"`
 	UpdatedAt    time.Time `json:"updated_at"`
 	CreatedAt    time.Time `json:"created_at"`
-	Name         string    `json:"name"`
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -70,15 +69,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseUser := UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		UpdatedAt: user.UpdatedAt,
-		CreatedAt: user.CreatedAt,
-		Name:      user.Name,
-	}
-
-	render.Render(w, r, response.Response(http.StatusCreated, responseUser))
+	render.Render(w, r, response.Response(http.StatusCreated, user))
 }
 
 func LoginUser(w http.ResponseWriter, r *http.Request) {

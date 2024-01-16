@@ -18,6 +18,10 @@ import (
 
 func TestCreateUser(t *testing.T) {
 	// Create a request body with user data
+
+	testDb, close, mock := tests.NewMockGORM()
+
+	defer close()
 	userData := map[string]interface{}{
 		"email":    "test@example.com",
 		"password": "password123",
@@ -25,17 +29,14 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	var response response.SuccessResponse
+	// create an instance of our config with the db
 
-	testDb, close, mock := tests.NewMockGORM()
+	reqBody, _ := json.Marshal(userData)
 
-	defer close()
 	// create an instance of our config with the db
 	config.GlobalConfig = &config.AppConfig{
 		DB: testDb,
 	}
-
-	reqBody, _ := json.Marshal(userData)
-
 	rows := mock.NewRows([]string{"id", "email", "customer_code", "created_at", "updated_at"}).
 		AddRow(0, "", "", time.Now(), time.Now())
 
@@ -55,7 +56,7 @@ func TestCreateUser(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), "Test User", "test@example.com", sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	mock.ExpectCommit()
-	
+
 	// Call the CreateUser handler function
 	controller.CreateUser(rr, req)
 
@@ -73,10 +74,4 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, "test@example.com", response.Data.(map[string]interface{})["email"])
 	assert.Equal(t, "", response.Data.(map[string]interface{})["customer_code"])
 	assert.Equal(t, 1, int(response.Data.(map[string]interface{})["id"].(float64)))
-
-	err = mock.ExpectationsWereMet()
-	if err != nil {
-		t.Log("Error with expectations:", err)
-	}
-
 }

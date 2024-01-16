@@ -1,5 +1,3 @@
-# product-subcription
-
 # Product Subscription Service
 
 ## Overview
